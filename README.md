@@ -71,7 +71,7 @@ The run's score is the mean of the case scores. Every term is a share of somethi
 
 Until you scope the search, the score moves a few points between identical runs. The starter searches all 3,653 chunks, and approximate search returns a slightly different set each time. Do not chase it.
 
-The board holds fourteen cases and its total is the number you call out at the end. Two of them carry a challenge tag: nothing we have tried reaches their evidence, and they are scored like the rest. The best we measured is 77, so the board does not top out at 100 and beating 77 is the target.
+The board holds fourteen cases and its total is the number you call out at the end. Two of them carry a challenge tag: nothing we have tried reaches their evidence, and they are scored like the rest. The best we measured is 81, so the board does not top out at 100 and beating 81 is the target.
 
 A larger set of questions stays with the facilitator. The fourteen here teach you the rubric, and the rest is the check on whether a change helps in general or only on the cases you can see.
 

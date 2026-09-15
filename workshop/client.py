@@ -33,14 +33,14 @@ def collection():
     return os.getenv("QDRANT_COLLECTION", "legal_lab_v2")
 
 
-def lab():
+def lab(path=LAB):
     """Read lab.py as it is on disk right now and return it as a module.
 
     Importing it once would show a participant the old score after they edited
     it, and teach them their change did nothing. That is the one feedback
     failure this workshop cannot afford.
     """
-    spec = importlib.util.spec_from_file_location("lab", LAB)
+    spec = importlib.util.spec_from_file_location("lab", path)
     module = importlib.util.module_from_spec(spec)
     try:
         spec.loader.exec_module(module)

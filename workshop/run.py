@@ -140,12 +140,11 @@ def preflight(args):
         else:
             print(f"OK    matter {matter}: {n} chunks")
 
-    # Check the models lab.py actually names. The collection declares more
-    # representations than the starter uses, and finding out what they are is
-    # part of the exercise, so preflight reports their names and stops there.
-    current = lab()
-    for signal, model in ((current.DENSE_VECTOR, current.DENSE_MODEL),
-                          (current.SPARSE_VECTOR, current.SPARSE_MODEL)):
+    # Fixed here rather than read out of lab.py. This checks that Cloud
+    # Inference answers at all, and a participant who renames a constant in
+    # their own file must not break the health check that tells them why.
+    for signal, model in (("minilm_l6_clause", "sentence-transformers/all-MiniLM-L6-v2"),
+                          ("bm25", "Qdrant/bm25")):
         try:
             qc.query_points(
                 name,
@@ -161,7 +160,7 @@ def preflight(args):
             print(f"FAIL  inference {signal:18} {model} :: {reason}")
 
     load_dotenv(".env")
-    points = current.retrieve(qc, name, "how long do we have to fix the problem", "harbor", "2026-01-20")
+    points = lab().retrieve(qc, name, "how long do we have to fix the problem", "harbor", "2026-01-20")
     print(f"{'OK   ' if points else 'FAIL '} lab.retrieve returned {len(points)} chunks")
     if not points:
         ok = False

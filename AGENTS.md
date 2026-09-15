@@ -17,7 +17,7 @@ Run `uv run python -m workshop.run score`. It scores fourteen cases and prints, 
 
 Change one thing in `lab.py`, run `score`, keep the change if the numbers improve. That is the whole method.
 
-Two cases are marked with `*`. No configuration anyone has tried retrieves their evidence, and they are scored like the rest, so the best total we measured is 77 rather than 100. Do not read a total below 100 as a bug.
+Two cases are marked with `*`. No configuration anyone has tried retrieves their evidence, and they are scored like the rest, so the best total we measured is 81 rather than 100. Do not read a total below 100 as a bug.
 
 ## Facts about the collection you would otherwise have to discover
 
@@ -25,7 +25,7 @@ Read the header of `lab.py` first. It lists the payload fields, their values, an
 
 - It is read-only and preloaded. Do not try to write, re-ingest, or re-embed.
 - Every embedding is produced by Qdrant Cloud Inference. No model runs locally. Use `models.Document(text=..., model=...)`.
-- It carries more named vectors than `lab.py` queries. Each name states the model and the text it was built from, and none of them states whether it is any good on this corpus, which is a measurement rather than a guess. Two of the six are empty.
+- All six named vectors are listed in the `lab.py` header with the model behind each. The starter queries two. A name says what a vector is, never whether it helps here, so measure before you switch.
 - The starter searches the whole collection, and approximate search returns a slightly different set each run, so its score moves a few points. Scoped configurations are steady.
 
 ## Out of scope

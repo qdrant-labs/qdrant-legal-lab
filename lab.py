@@ -10,7 +10,7 @@ every run, so you never have to restart it.
 The collection is read-only and preloaded. It holds the three client matters
 this lab is about, and several hundred real public contracts belonging to other
 clients. It also holds more representations than this starter asks for; `score`
-prints how many it uses against how many are there.
+prints how many it uses against how many are there, and all of them are loaded.
 
 Keep the signature of retrieve() exactly as it is. The scorer calls it.
 
@@ -48,6 +48,19 @@ from qdrant_client import models
 # the vector "minilm_l6_clause", which was built with all-MiniLM-L6-v2. The
 # collection carries others. `run score` prints how many, and nothing tells you
 # which of them is worth using except measuring it.
+# The collection carries six named vectors. This starter queries two of them.
+# A name states the model and the text it was built from, and says nothing about
+# whether it helps here. That is a measurement, and the score is where you make
+# it. Switching to one because it sounds stronger is the habit this exercise is
+# built to break.
+#
+#   minilm_l6_clause     sentence-transformers/all-MiniLM-L6-v2   the clause body
+#   minilm_l6_document   sentence-transformers/all-MiniLM-L6-v2   title + heading + body
+#   mxbai_large_v1       mixedbread-ai/mxbai-embed-large-v1       the clause body
+#   bm25                 Qdrant/bm25                              sparse, exact terms
+#   splade_pp_v1         prithivida/Splade_PP_en_v1               sparse, term expansion
+#   colbert_small_v1     answerdotai/answerai-colbert-small-v1    late interaction
+#
 DENSE_VECTOR = "minilm_l6_clause"
 DENSE_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 SPARSE_VECTOR = "bm25"
