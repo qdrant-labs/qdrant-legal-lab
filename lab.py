@@ -1,24 +1,15 @@
-"""THE ONE FILE YOU EDIT.
+"""Edit this file during the lab. The web app reloads it on every run.
 
-Everything else is fixed. Change this file, run
+The collection is preloaded and read-only. It contains the three fictional
+client matters used in the lab, plus public contracts from other clients.
 
-    uv run python -m workshop.run score
+Keep the signature of retrieve() unchanged.
 
-and watch the score move. The browser at localhost:8000 re-reads this file on
-every run, so you never have to restart it.
+Qdrant references:
+https://qdrant.tech/documentation/concepts/hybrid-queries/
+https://qdrant.tech/documentation/concepts/filtering/
 
-The collection is read-only and preloaded. It holds the three client matters
-this lab is about, and several hundred real public contracts belonging to other
-clients. It also holds more representations than this starter asks for; `score`
-prints how many it uses against how many are there, and all of them are loaded.
-
-Keep the signature of retrieve() exactly as it is. The scorer calls it.
-
-New to Qdrant? The two pages that explain the code below are
-https://qdrant.tech/documentation/concepts/hybrid-queries/ for prefetch and
-fusion, and https://qdrant.tech/documentation/concepts/filtering/ for filter
-conditions. AGENTS.md lists what the collection holds. Paste both at your
-coding agent, because it cannot see the Evidence Playbook in the browser.
+AGENTS.md lists the available vectors and their models.
 
 Every chunk carries these payload fields:
 
@@ -33,8 +24,7 @@ Every chunk carries these payload fields:
     heading            the clause heading
     references         passage ids this clause points at
 
-There are more fields than these. Look before you tune, because both of these
-are allowed and neither is in this file:
+You can inspect the collection and a sample point from this file:
 
     params = client.get_collection(collection).config.params
     print(params.vectors, params.sparse_vectors)
@@ -43,16 +33,9 @@ are allowed and neither is in this file:
 
 from qdrant_client import models
 
-# Cloud Inference embeds the query server-side, so no model runs on your laptop.
-# A named vector and the model behind it are two different things: this queries
-# the vector "minilm_l6_clause", which was built with all-MiniLM-L6-v2. The
-# collection carries others. `run score` prints how many, and nothing tells you
-# which of them is worth using except measuring it.
-# The collection carries six named vectors. This starter queries two of them.
-# A name states the model and the text it was built from, and says nothing about
-# whether it helps here. That is a measurement, and the score is where you make
-# it. Switching to one because it sounds stronger is the habit this exercise is
-# built to break.
+# Qdrant Cloud Inference embeds each query. The starter uses two of the six
+# available vectors. Test any change against the board; a larger model is not
+# necessarily a better fit for this corpus.
 #
 #   minilm_l6_clause     sentence-transformers/all-MiniLM-L6-v2   the clause body
 #   minilm_l6_document   sentence-transformers/all-MiniLM-L6-v2   title + heading + body
@@ -71,11 +54,7 @@ LIMIT = 5
 
 
 def build_filter(matter_id, as_of):
-    """Scope the search.
-
-    You are given two facts about every question: which client matter it is
-    about, and the date it is asked on. Both are yours to use here.
-    """
+    """Filter chunks using the matter and date supplied with the question."""
     return models.Filter(
         must=[
             models.FieldCondition(
@@ -92,10 +71,7 @@ def build_filter(matter_id, as_of):
 
 
 def retrieve(client, collection, question, matter_id, as_of, limit=LIMIT):
-    """Return ranked chunks for one dated question about one matter.
-
-    Keep this signature. Return a list of ScoredPoint with payloads.
-    """
+    """Return ranked chunks for one dated question about one matter."""
     query_filter = build_filter(matter_id, as_of)
     dense = models.Document(text=question, model=DENSE_MODEL)
     sparse = models.Document(text=question, model=SPARSE_MODEL)
@@ -103,10 +79,18 @@ def retrieve(client, collection, question, matter_id, as_of, limit=LIMIT):
     return client.query_points(
         collection,
         prefetch=[
-            models.Prefetch(query=dense, using=DENSE_VECTOR,
-                            filter=query_filter, limit=CANDIDATES),
-            models.Prefetch(query=sparse, using=SPARSE_VECTOR,
-                            filter=query_filter, limit=CANDIDATES),
+            models.Prefetch(
+                query=dense,
+                using=DENSE_VECTOR,
+                filter=query_filter,
+                limit=CANDIDATES,
+            ),
+            models.Prefetch(
+                query=sparse,
+                using=SPARSE_VECTOR,
+                filter=query_filter,
+                limit=CANDIDATES,
+            ),
         ],
         query=models.FusionQuery(fusion=models.Fusion.RRF),
         query_filter=query_filter,
