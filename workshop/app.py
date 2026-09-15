@@ -24,6 +24,8 @@ import http.server
 import html
 import json
 import os
+import statistics
+import time
 import urllib.parse
 from . import agent
 from .display import client_name
@@ -154,8 +156,8 @@ td.full { color: var(--good); font-weight: 600; }
 td.none { color: var(--good); }
 td.bad { color: var(--amaranth); font-weight: 600; }
 td.detail { background: var(--wash); padding: 14px 16px 6px; }
-.scorecards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px;
-  max-width: 340px; }
+.scorecards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px;
+  max-width: 520px; }
 .scorecard { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
 .scorecard b { display: block; font-size: 19px; }
 .scorecard span { color: var(--muted); font-size: 11px; }
@@ -376,6 +378,7 @@ function cards() {
   $('#cards').innerHTML = `<div class="scorecards">
     <div class="scorecard"><b>${scores.score}</b><span>Score out of 100</span></div>
     <div class="scorecard"><b>${scores.solved}/${scores.questions}</b><span>Cases Solved</span></div>
+    <div class="scorecard"><b>${scores.median_latency_ms} ms</b><span>Median Retrieval</span></div>
   </div><p class="micro">An unscoped search returns a slightly different set each run, so the
   starter's score moves a point or two on its own.</p>`;
 }
@@ -572,9 +575,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def score(self):
         try:
             current = lab()
-            run = lambda q, m, d: [
-                p.payload for p in current.retrieve(self.qc, self.name, q, m, d, limit=K)
-            ]
+            latencies = []
+
+            def run(q, m, d):
+                started = time.perf_counter()
+                points = current.retrieve(self.qc, self.name, q, m, d, limit=K)
+                latencies.append((time.perf_counter() - started) * 1000)
+                return [p.payload for p in points]
+
             result = score_all(CALIBRATION, run, k=K)
         except RuntimeError as exc:
             return {"error": str(exc)}
@@ -588,6 +596,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             "rows": {r["question_id"]: {k: r[k] for k in keep} for r in result["rows"]},
             "score": result["score"],
             "solved": result["solved"], "questions": result["questions"],
+            "median_latency_ms": round(statistics.median(latencies)),
             "coverage": result["coverage"], "ranking": result["ranking"],
             "tenant_leaks": result["tenant_leaks"],
             "temporal_violations": result["temporal_violations"],
